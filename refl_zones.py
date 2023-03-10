@@ -578,7 +578,7 @@ def build_occluded_sightlines(station, observer_latitude, observer_longitude, ob
     #Store data in geodataframes
     gdf_list_point = []
     gdf_list_line = []
-    azimuths=range(azim1,azim2,10)
+    azimuths=range(azim1,azim2+10,10)
     print('Checking Azimuths:', azimuths, 'Angles:', angles)
     #Now loop through all angles chosen
     for a in azimuths:
