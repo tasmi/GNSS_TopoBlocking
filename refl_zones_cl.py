@@ -188,7 +188,7 @@ def reflzones(station: str, azim1: int=0, azim2: int=360, lat: float=None, lon: 
     #This uses a default 25 km max search distance (d), and checks a given set of angles
     #Could be limited to only a few chosen angles as well (e.g., angles = el_list, or angles = range(5,31)
     #Could also be limited to a few chosen azimuths (e.g., azimuths=[0,45,90,etc])
-    rf.build_occluded_sightlines(station, lat, lon, el_height, azimuths=range(0,360,10), azim1=azim1, azim2=azim2 d=1,\
+    rf.build_occluded_sightlines(station, lat, lon, el_height, azimuths=range(0,360,10), azim1=azim1, azim2=azim2, d=1,\
                                      angles=el_list, RH = RH, dem_path=dem_path, savedir=outputdir + '/')#Makan d from 25 to 0.5. Also changed angles=el_list
         
     print('Checked sightlines against', dem_path)
