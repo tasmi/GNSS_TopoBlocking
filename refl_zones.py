@@ -634,11 +634,11 @@ def build_occluded_sightlines(station, observer_latitude, observer_longitude, ob
         #out_gdf_line.to_file(savedir + station + '_blockedLines.gpkg', driver='GPKG')
         
         #Export as KML
-        def build_colors(n_colors=30, cmap='gist_rainbow'):
-            from matplotlib import pyplot as plt
-            from matplotlib.colors import rgb2hex
-            cm = plt.get_cmap(cmap)
-            return [rgb2hex(cm(1.*i/n_colors)) + 'FF' for i in range(n_colors)] #FF makes them opaque
+#        def build_colors(n_colors=30, cmap='gist_rainbow'):
+#            from matplotlib import pyplot as plt
+#            from matplotlib.colors import rgb2hex
+#            cm = plt.get_cmap(cmap)
+#            return [rgb2hex(cm(1.*i/n_colors)) + 'FF' for i in range(n_colors)] #FF makes them opaque
             
         kml = simplekml.Kml()
 
