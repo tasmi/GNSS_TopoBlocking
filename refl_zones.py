@@ -517,8 +517,8 @@ def save_reflzone_orbits():
 
     return foundfiles 
 
-def build_occluded_sightlines(station, observer_latitude, observer_longitude, observer_elevation, dem_path=None, azimuths=range(0, 360),RH=None,\
-                              angles=range(5,31), d=25, savedir=None):
+def build_occluded_sightlines(station, observer_latitude, observer_longitude, observer_elevation, dem_path=None, azimuths=range(0, 360),azim1=None,azim2=None,RH=None,\
+                              angles=range(5,31), d=1, savedir=None):
     '''
     For a given lat/lon/elevation location (station), check for blocked sight lines.
     Uses fixed angles/elevations for simplicity/speed of processing
@@ -578,7 +578,7 @@ def build_occluded_sightlines(station, observer_latitude, observer_longitude, ob
     #Store data in geodataframes
     gdf_list_point = []
     gdf_list_line = []
-    
+    azimuths=range(azim1,azim2,10)
     print('Checking Azimuths:', azimuths, 'Angles:', angles)
     #Now loop through all angles chosen
     for a in azimuths:
