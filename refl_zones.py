@@ -582,8 +582,7 @@ def build_occluded_sightlines(station, observer_latitude, observer_longitude, ob
     print('Checking Azimuths:', azimuths, 'Angles:', angles)
     #Now loop through all angles chosen
     for a in azimuths:
-        if a % 30 == 0:
-            print('Starting Azimuth', a)
+        print('Starting Azimuth', a)
             
         #Get a new point some distance away from observer
         target_lat, target_lon = get_point_at_distance(observer_latitude, observer_longitude, d, a)
