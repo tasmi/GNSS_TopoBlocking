@@ -524,7 +524,6 @@ def build_occluded_sightlines(station, observer_latitude, observer_longitude, ob
     Uses fixed angles/elevations for simplicity/speed of processing
     Only checks up to a 'd' distance away in km
     '''
-    print (RH)
     import xarray as xr
     #import rioxarray
     
