@@ -17,10 +17,10 @@ import math
 
 import simplekml
 
-station, observer_latitude, observer_longitude, observer_elevation, dem_path = sys.argv[1:]
+#station, observer_latitude, observer_longitude, observer_elevation, dem_path = sys.argv[1:]
 
 def build_occluded_sightlines(station, observer_latitude, observer_longitude, observer_elevation, dem_path=None, \
-                              azimuths=range(0, 360), angles=range(5,31), d=25, savedir=None):
+                              azimuths=range(0, 360), RH=None, angles=range(5,31), d=25, savedir=None):
     '''
     For a given lat/lon/elevation location (station), check for blocked sight lines.
     Uses fixed angles/elevations for simplicity/speed of processing
@@ -87,7 +87,7 @@ def build_occluded_sightlines(station, observer_latitude, observer_longitude, ob
         line_ll = LineString([obs_ll, target_ll])
         
         #Get the DEM values along that line
-        sample_pts, profile = extract_along_line(dem.band_data, line_ll, n_samples=100)
+        sample_pts, profile = extract_along_line(dem.band_data, line_ll, n_samples=50)
         
         #Find the minimum angle where we get topo blocking
         for i, pt in enumerate(sample_pts):
@@ -101,7 +101,7 @@ def build_occluded_sightlines(station, observer_latitude, observer_longitude, ob
                 
                 #Now check various slope angles
                 for ang in angles:
-                    view_height = observer_elevation + dist * math.sin(ang * np.pi/180)
+                    view_height = observer_elevation + float(RH) + dist * math.sin(ang * np.pi/180)
                     if view_height <= topo_elev:
                         print(a, ang, dist, view_height, topo_elev)
                         #Add to a list of problematic view points, coded with angle
@@ -136,18 +136,18 @@ def build_occluded_sightlines(station, observer_latitude, observer_longitude, ob
             
         kml = simplekml.Kml()
         
-        colormap = build_colors(len(angles))
+        colormap = [simplekml.Color.yellow, simplekml.Color.blue, simplekml.Color.red,simplekml.Color.green,simplekml.Color.cyan,simplekml.Color.white] #build_colors(len(angles))
         a_arr = np.array(list(angles))
         #Split into two folders, one for lines one for points
-        fol = kml.newfolder(name='Points')
-        for ang in angles:
-            subset = out_gdf_point[out_gdf_point.ElevAngle == ang]
-            #Define one style for all points of a given angle to save space in the output KML
-            sharedstyle = simplekml.Style()
-            color = colormap[np.where(a_arr == ang)[0][0]]
-            sharedstyle.iconstyle.color = color
-            sharedstyle.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
-            sharedstyle.altitudemode = simplekml.AltitudeMode.relativetoground
+#        fol = kml.newfolder(name='Points')
+#        for ang in angles:
+#            subset = out_gdf_point[out_gdf_point.ElevAngle == ang]
+#            #Define one style for all points of a given angle to save space in the output KML
+#            sharedstyle = simplekml.Style()
+#            color = colormap[np.where(a_arr == ang)[0][0]]
+#            sharedstyle.iconstyle.color = color
+#            sharedstyle.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
+#            sharedstyle.altitudemode = simplekml.AltitudeMode.relativetoground
             
             for _, row in subset.iterrows():
                 #pnt = fol.newpoint(name=ang, coords = row.geometry.coords[:]) #There can be a LOT of names here...
