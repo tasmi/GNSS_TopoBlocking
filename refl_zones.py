@@ -517,7 +517,8 @@ def save_reflzone_orbits():
 
     return foundfiles 
 
-def build_occluded_sightlines(station, observer_latitude, observer_longitude, observer_elevation, dem_path=None, azimuths=range(0, 360),azim1=None,azim2=None,RH=None,\
+def build_occluded_sightlines(station, observer_latitude, observer_longitude, observer_elevation, dem_path=None,\
+                              azimuths=range(0, 360), azim1=None, azim2=None, RH=None,\
                               angles=range(5,31), d=1, savedir=None):
     '''
     For a given lat/lon/elevation location (station), check for blocked sight lines.
@@ -525,7 +526,7 @@ def build_occluded_sightlines(station, observer_latitude, observer_longitude, ob
     Only checks up to a 'd' distance away in km
     '''
     import xarray as xr
-    #import rioxarray
+    import rioxarray
     
     import geopandas as gpd, pandas as pd
     from shapely.geometry import Point, LineString
@@ -578,7 +579,10 @@ def build_occluded_sightlines(station, observer_latitude, observer_longitude, ob
     #Store data in geodataframes
     gdf_list_point = []
     gdf_list_line = []
-    azimuths=range(azim1,azim2+10,10)
+    if azim1:
+        print('Setting a 10 degree Azimuth step...')
+        step = 10
+        azimuths = range(azim1,azim2 + step, step)
     print('Checking Azimuths:', azimuths, 'Angles:', angles)
     #Now loop through all angles chosen
     for a in azimuths:
@@ -633,48 +637,71 @@ def build_occluded_sightlines(station, observer_latitude, observer_longitude, ob
         #out_gdf_line.to_file(savedir + station + '_blockedLines.gpkg', driver='GPKG')
         
         #Export as KML
-#        def build_colors(n_colors=30, cmap='gist_rainbow'):
-#            from matplotlib import pyplot as plt
-#            from matplotlib.colors import rgb2hex
-#            cm = plt.get_cmap(cmap)
-#            return [rgb2hex(cm(1.*i/n_colors)) + 'FF' for i in range(n_colors)] #FF makes them opaque
+        def build_colors(n_colors=30, cmap='gist_rainbow'):
+            from matplotlib import pyplot as plt
+            from matplotlib.colors import rgb2hex
+            cm = plt.get_cmap(cmap)
+            color_dict = {}
+            for i in range(n_colors):
+                color_dict[i] = rgb2hex(cm(1.*i/n_colors)) + 'FF' #FF makes them opaque
+            return color_dict
             
         kml = simplekml.Kml()
 
-        colormap = [simplekml.Color.yellow, simplekml.Color.blue, simplekml.Color.red,simplekml.Color.green,simplekml.Color.cyan,simplekml.Color.white]#build_colors(len(angles))
+        colormap = build_colors(len(angles))
+        #Modify specific colors to match up with the FZones color coding
+        colormap[5] = simplekml.Color.yellow
+        colormap[10] = simplekml.Color.blue
+        colormap[15] = simplekml.Color.red
+        colormap[20] = simplekml.Color.green
+        colormap[25] = simplekml.Color.cyan
+        colormap[30] = simplekml.Color.white
+        #colormap = [simplekml.Color.yellow, simplekml.Color.blue, simplekml.Color.red, simplekml.Color.green, simplekml.Color.cyan, simplekml.Color.white]
 
-        a_arr = np.array(list(angles))
+        #a_arr = np.array(list(angles))
         #Split into two folders, one for lines one for points
-#        fol = kml.newfolder(name='Points')
-#        for ang in angles:
-#            subset = out_gdf_point[out_gdf_point.ElevAngle == ang]
-#            #Define one style for all points of a given angle to save space in the output KML
-#            sharedstyle = simplekml.Style()
-#            color = colormap[np.where(a_arr == ang)[0][0]]
-#            print(color)
-#            sharedstyle.iconstyle.color = color
-#            sharedstyle.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
-#            sharedstyle.altitudemode = simplekml.AltitudeMode.relativetoground
+        #NOTE -- POINTS ARE ONLY USED TO LABEL THE LINES, since lines cannot have visible labels
+        fol = kml.newfolder(name='Labels')
+        for ang in angles:
+            #This is all points along the line
+            subset = out_gdf_point[out_gdf_point.ElevAngle == ang]            
             
-#            for _, row in subset.iterrows():
-#                #pnt = fol.newpoint(name=ang, coords = row.geometry.coords[:]) #There can be a LOT of names here...
-#                pnt = fol.newpoint(coords = row.geometry.coords[:])
-#                pnt.style = sharedstyle
-#            del sharedstyle
+            #Define one style for all points of a given angle to save space in the output KML
+            sharedstyle = simplekml.Style()
+            color = colormap[ang]#np.where(a_arr == ang)[0][0]]
+            sharedstyle.iconstyle.color = color
+            sharedstyle.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
+            sharedstyle.iconstyle.scale = 0 #Set the point to be zero size
+            sharedstyle.altitudemode = simplekml.AltitudeMode.relativetoground
+                        
+            #Now get only one azimuth at a time
+            for a in azimuths:
+                sub_sub = subset[subset.Azimuth == a]
+                
+                #Now only get one point per azimuth (max view height for last one), could also do average to plot label in middle of line as well
+                row = sub_sub[sub_sub.ViewHeight == np.nanmax(sub_sub.ViewHeight)]
+
+                #for _, row in sub_sub.iterrows():
+                pnt = fol.newpoint(name=ang, coords = row.geometry[0].coords[:]) #There can be a LOT of names here...
+                #pnt = fol.newpoint(coords = row.geometry.coords[:])
+                pnt.style = sharedstyle
+            del sharedstyle
             
         fol = kml.newfolder(name='Lines')
         for ang in angles:
             subset = out_gdf_line[out_gdf_line.ElevAngle == ang]
             #Define one style for all lines of a given angle
             sharedstyle = simplekml.Style()
-            color = colormap[np.where(a_arr == ang)[0][0]]
+            color = colormap[ang]#np.where(a_arr == ang)[0][0]]
             sharedstyle.linestyle.color = color
             sharedstyle.iconstyle.color = color
             sharedstyle.linestyle.width = 3
             sharedstyle.altitudemode = simplekml.AltitudeMode.relativetoground
+            #sharedstyle.labelstyle.scale = 2  # Text twice as big
             
+            #TBD: adding elevation angle names to KML lines (similar to Fresnel Zones lines where PRNs are labeled)
             for _, row in subset.iterrows():
-                ln = fol.newlinestring(coords = row.geometry.coords[:])
+                ln = fol.newlinestring(coords = row.geometry.coords[:], name=ang)
                 ln.style = sharedstyle 
             del sharedstyle
 
