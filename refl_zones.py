@@ -673,6 +673,7 @@ def build_occluded_sightlines(station, observer_latitude, observer_longitude, ob
             sharedstyle.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
             sharedstyle.iconstyle.scale = 0 #Set the point to be zero size
             sharedstyle.altitudemode = simplekml.AltitudeMode.relativetoground
+            sharedstyle.labelstyle.color = color
                         
             #Now get only one azimuth at a time
             for a in azimuths:

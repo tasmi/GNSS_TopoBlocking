@@ -113,11 +113,11 @@ def reflzones(station: str, azim1: int=0, azim2: int=360, lat: float=None, lon: 
     if len(el_list) == 0:
         el_list = [5, 10, 15]
     
-    if len(el_list) > 5:
-        el_list = el_list[0:5]
-        print('Elevation angle list is very long - reducing to five.')
+    if len(el_list) > 10:
+        el_list = el_list[0:10]
+        print('Elevation angle list is very long - reducing to ten.')
 
-    emax = 31 # degrees for now
+    emax = 50#31 # degrees for now
 
     print(all(x < 50 for x in el_list))
 
